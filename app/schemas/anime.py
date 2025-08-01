@@ -123,6 +123,7 @@ class AnimeMingguan(BaseModel):
 
 class HomeData(BaseModel):
     """Model for home page data."""
+    confidence_score: float = Field(0.0, description="Confidence score for data validity (0.0-1.0)")
     top10: List[AnimeMingguan] = []
     new_eps: List[AnimeTerbaru] = []
     movies: List[AnimeMovie] = []
