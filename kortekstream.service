@@ -1,0 +1,21 @@
+[Unit]
+Description=KortekStream FastAPI application
+After=network.target
+
+[Service]
+User=korteks
+Group=korteks
+WorkingDirectory=/home/korteks/kortekstream
+Environment="PATH=/home/korteks/kortekstream/venv/bin"
+ExecStart=/home/korteks/kortekstream/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001 --workers 4
+
+# Restart ketika terjadi error
+Restart=on-failure
+RestartSec=5s
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
