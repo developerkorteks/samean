@@ -1,117 +1,68 @@
-# Panduan Deployment KortekStream API
+# KortekStream API - Deployment Guide
 
-Dokumen ini berisi panduan untuk men-deploy KortekStream API menggunakan uvicorn di berbagai platform.
+## Quick Start
 
-## Persiapan
-
-1. Pastikan Python 3.8+ sudah terinstall
-2. Clone repository ini
-3. Buat virtual environment:
-   ```bash
-   python -m venv venv
-   ```
-4. Aktifkan virtual environment:
-   - Windows: `venv\Scripts\activate`
-   - Linux/Mac: `source venv/bin/activate`
-5. Install dependensi:
-   ```bash
-   pip install -r requirements.txt
-   ```
-6. Salin file `.env.example` menjadi `.env` dan sesuaikan konfigurasi:
-   ```bash
-   cp .env.example .env
-   ```
-
-## Deployment Lokal
-
-Untuk menjalankan aplikasi di lingkungan lokal:
-
+### Development Deployment
 ```bash
-./start.sh
+# Clone and setup
+git clone <repository-url>
+cd fastapi_app
+
+# Deploy with development settings
+./deploy.sh build start
+
+# Access the API
+curl http://localhost:8182/health
 ```
 
-Atau:
-
+### Production Deployment
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8001 --workers 4
+# Setup production environment
+cp .env.production .env
+# Edit .env with your production settings
+
+# Deploy with production settings
+./deploy-prod.sh build start
 ```
 
-Aplikasi akan berjalan di `http://localhost:8001`.
+## Available Endpoints
 
-## Deployment di Server Linux dengan Systemd
+- **Health Check**: `GET http://localhost:8182/health`
+- **API Documentation**: `GET http://localhost:8182/docs`
+- **Home**: `GET http://localhost:8182/api/v1/home`
+- **Latest Anime**: `GET http://localhost:8182/api/v1/anime-terbaru`
+- **Release Schedule**: `GET http://localhost:8182/api/v1/jadwal-rilis`
+- **Search**: `GET http://localhost:8182/api/v1/search?q=naruto`
 
-1. Salin file `kortekstream.service` ke direktori systemd:
-   ```bash
-   sudo cp kortekstream.service /etc/systemd/system/
-   ```
+## Service Status
 
-2. Sesuaikan path dan user di file `kortekstream.service` jika diperlukan
+Current deployment is running on:
+- **API Port**: 8182
+- **Redis Port**: 6379
+- **Environment**: Development
+- **CORS**: Enabled for all origins (*)
 
-3. Reload systemd daemon:
-   ```bash
-   sudo systemctl daemon-reload
-   ```
+## Management Commands
 
-4. Aktifkan service agar berjalan saat startup:
-   ```bash
-   sudo systemctl enable kortekstream
-   ```
+```bash
+# Development
+./deploy.sh start|stop|restart|build|logs|status
 
-5. Jalankan service:
-   ```bash
-   sudo systemctl start kortekstream
-   ```
+# Production
+./deploy-prod.sh start|stop|restart|build|logs|status
+```
 
-6. Cek status service:
-   ```bash
-   sudo systemctl status kortekstream
-   ```
+## Configuration
 
-## Deployment di Heroku
+Key environment variables:
+- `PORT=8182` - API external port
+- `DOMAIN=localhost` - Server domain
+- `PROTOCOL=http` - Server protocol
+- `BACKEND_CORS_ORIGINS=*` - CORS settings
 
-1. Pastikan sudah memiliki akun Heroku dan Heroku CLI terinstall
-2. Login ke Heroku:
-   ```bash
-   heroku login
-   ```
+## Docker Services
 
-3. Buat aplikasi baru di Heroku:
-   ```bash
-   heroku create nama-aplikasi
-   ```
+1. **kortekstream-api**: FastAPI application
+2. **kortekstream-redis**: Redis cache server
 
-4. Deploy aplikasi:
-   ```bash
-   git push heroku main
-   ```
-
-5. Pastikan minimal 1 dyno berjalan:
-   ```bash
-   heroku ps:scale web=1
-   ```
-
-6. Buka aplikasi:
-   ```bash
-   heroku open
-   ```
-
-## Deployment dengan Docker
-
-1. Build Docker image:
-   ```bash
-   docker build -t kortekstream .
-   ```
-
-2. Jalankan container:
-   ```bash
-   docker run -d -p 8001:8001 --name kortekstream kortekstream
-   ```
-
-Aplikasi akan berjalan di `http://localhost:8001`.
-
-## Catatan Penting
-
-- Pastikan file `.env` sudah dikonfigurasi dengan benar
-- Untuk production, pastikan `reload=True` tidak diaktifkan
-- Gunakan jumlah workers yang sesuai dengan jumlah CPU core (biasanya 2-4 workers sudah cukup)
-- Pastikan port yang digunakan tidak terblokir oleh firewall
+Both services include health checks and automatic restart policies.
