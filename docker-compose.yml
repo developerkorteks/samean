@@ -1,32 +1,80 @@
-version: '3'
-
 services:
   api:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: kortekstream-api
     ports:
-      - "8001:8001"
-    volumes:
-      - ./:/app
+      - "${PORT:-8182}:8001"
+    environment:
+      - PORT=8001
+      - WORKERS=${WORKERS:-1}
+      - API_V1_STR=${API_V1_STR:-/api/v1}
+      - PROJECT_NAME=${PROJECT_NAME:-KortekStream API}
+      - BACKEND_CORS_ORIGINS=${BACKEND_CORS_ORIGINS:-*}
+      - CACHE_TTL=${CACHE_TTL:-600}
+      - CACHE_LONG_TTL=${CACHE_LONG_TTL:-3600}
+      - CACHE_VERY_LONG_TTL=${CACHE_VERY_LONG_TTL:-86400}
+      - SAMEHADAKU_BASE_URL=${SAMEHADAKU_BASE_URL:-https://v1.samehadaku.how}
+      - SAMEHADAKU_SEARCH_URL=${SAMEHADAKU_SEARCH_URL:-https://samehadaku.now}
+      - SAMEHADAKU_API_URL=${SAMEHADAKU_API_URL:-https://samehadaku.now/wp-json/custom/v1}
+      - DOMAIN=${DOMAIN:-localhost}
+      - PROTOCOL=${PROTOCOL:-http}
     env_file:
       - .env
     restart: unless-stopped
     networks:
       - kortekstream-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
-  # Jika ingin menambahkan Redis untuk caching
+  # Redis for caching
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
+    container_name: kortekstream-redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       - kortekstream-network
     volumes:
       - redis-data:/data
     restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    container_name: kortekstream-nginx
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - kortekstream-network
+    depends_on:
+      - api
+    restart: unless-stopped
+    profiles:
+      - with-nginx
 
 networks:
   kortekstream-network:
     driver: bridge
+    name: kortekstream-network
 
 volumes:
   redis-data:
+    name: kortekstream-redis-data

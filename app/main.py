@@ -25,14 +25,13 @@ app = FastAPI(
 )
 
 # Set up CORS middleware
-if settings.BACKEND_CORS_ORIGINS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Add middleware for logging requests and responses
 @app.middleware("http")
@@ -74,17 +73,29 @@ def custom_openapi(request: Request):
     
     # Check for forwarded headers (for reverse proxy/load balancer)
     forwarded_proto = request.headers.get("x-forwarded-proto")
+    forwarded_host = request.headers.get("x-forwarded-host")
+    
     if forwarded_proto:
         scheme = forwarded_proto
+    if forwarded_host:
+        host = forwarded_host
+    
+    # Use configured domain if available, otherwise use request host
+    if hasattr(settings, 'DOMAIN') and settings.DOMAIN != "localhost":
+        host = settings.DOMAIN
+        scheme = getattr(settings, 'PROTOCOL', scheme)
     
     server_url = f"{scheme}://{host}"
     
     openapi_schema = get_openapi(
         title=settings.PROJECT_NAME,
         version="1.0.0",
-        description="FastAPI Anime Scraping API with dynamic host detection",
+        description=f"FastAPI Anime Scraping API - Dynamic host: {server_url}",
         routes=app.routes,
-        servers=[{"url": server_url}]  # Dynamic server URL
+        servers=[
+            {"url": server_url, "description": "Current server"},
+            {"url": f"{scheme}://{host}{settings.API_V1_STR}", "description": "API v1"}
+        ]
     )
     
     app.openapi_schema = openapi_schema
