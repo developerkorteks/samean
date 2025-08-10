@@ -302,6 +302,8 @@ def validate_home_data(data: Dict[str, Any]) -> Dict[str, Any]:
     # Inisialisasi hasil dengan confidence_score default 0.0
     result = {
         "confidence_score": 0.0,
+        "message": "Data berhasil diambil",
+        "source": "samehadaku.how",
         "top10": [],
         "new_eps": [],
         "movies": [],

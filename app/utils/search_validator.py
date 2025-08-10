@@ -19,30 +19,30 @@ def fill_optional_fields(item: Dict[str, Any]) -> Dict[str, Any]:
     # Buat salinan item untuk dimodifikasi
     filled_item = item.copy()
     
-    # Field opsional untuk AnimeMovie
-    if "tanggal" not in filled_item or not filled_item["tanggal"]:
-        filled_item["tanggal"] = "N/A"
-    
-    if "genres" not in filled_item or not filled_item["genres"]:
-        filled_item["genres"] = ["Anime"]
-    
+    # Field opsional untuk AnimeSearch
     if "status" not in filled_item or not filled_item["status"]:
         filled_item["status"] = "N/A"
+    
+    if "tipe" not in filled_item or not filled_item["tipe"]:
+        filled_item["tipe"] = "N/A"
     
     if "skor" not in filled_item or not filled_item["skor"]:
         filled_item["skor"] = "N/A"
     
+    if "penonton" not in filled_item or not filled_item["penonton"]:
+        filled_item["penonton"] = "N/A"
+    
     if "sinopsis" not in filled_item or not filled_item["sinopsis"]:
         filled_item["sinopsis"] = "N/A"
     
-    if "views" not in filled_item or not filled_item["views"]:
-        filled_item["views"] = "N/A"
+    if "genre" not in filled_item or not filled_item["genre"]:
+        filled_item["genre"] = ["Anime"]
     
     return filled_item
 
-def validate_movie_item(item: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
+def validate_search_item(item: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
     """
-    Memvalidasi item movie.
+    Memvalidasi item search result.
     
     Args:
         item: Item yang akan divalidasi
@@ -51,7 +51,7 @@ def validate_movie_item(item: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
         Tuple[bool, Dict[str, Any]]: (is_valid, validated_item)
     """
     # Log item untuk debugging
-    logger.info(f"Validasi item movie: {item}")
+    logger.info(f"Validasi item search: {item}")
     
     # Validasi judul
     title_valid = validate_title(item.get("judul", ""))
@@ -77,12 +77,12 @@ def validate_movie_item(item: Dict[str, Any]) -> Tuple[bool, Dict[str, Any]]:
     is_valid = title_valid and url_valid and slug_valid and cover_valid
     
     if is_valid:
-        logger.info("Item movie valid")
+        logger.info("Item search valid")
         # Isi field opsional yang kosong dengan data dummy
         validated_item = fill_optional_fields(item)
         return True, validated_item
     else:
-        logger.warning("Item movie tidak valid")
+        logger.warning("Item search tidak valid")
         return False, {}
 
 def check_url_cover_validity(data: List[Dict[str, Any]]) -> bool:
@@ -97,17 +97,17 @@ def check_url_cover_validity(data: List[Dict[str, Any]]) -> bool:
     """
     for item in data:
         if not validate_url(item.get("url", "")):
-            logger.error(f"URL tidak valid pada item movie: {item.get('url', '')}")
+            logger.error(f"URL tidak valid pada item search: {item.get('url', '')}")
             return False
         if not validate_image_url(item.get("cover", "")):
-            logger.error(f"Cover tidak valid pada item movie: {item.get('cover', '')}")
+            logger.error(f"Cover tidak valid pada item search: {item.get('cover', '')}")
             return False
     
     return True
 
-def validate_movie_data(data: List[Dict[str, Any]]) -> Dict[str, Any]:
+def validate_search_data(data: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
-    Memvalidasi dan menyusun data JSON untuk endpoint movie.
+    Memvalidasi dan menyusun data JSON untuk endpoint search.
     
     Args:
         data: Data yang akan divalidasi
@@ -115,7 +115,7 @@ def validate_movie_data(data: List[Dict[str, Any]]) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: Data yang telah divalidasi dengan confidence_score
     """
-    logger.info("Memulai validasi data movie")
+    logger.info("Memulai validasi data search")
     
     # Inisialisasi hasil dengan confidence_score default 0.0
     result = {
@@ -134,18 +134,18 @@ def validate_movie_data(data: List[Dict[str, Any]]) -> Dict[str, Any]:
     # Validasi setiap item
     valid_items = []
     if isinstance(data, list):
-        logger.info(f"Validasi movie: {len(data)} item")
+        logger.info(f"Validasi search: {len(data)} item")
         for item in data:
-            is_valid, validated_item = validate_movie_item(item)
+            is_valid, validated_item = validate_search_item(item)
             if is_valid:
                 valid_items.append(validated_item)
-        logger.info(f"Movie valid: {len(valid_items)}/{len(data)}")
+        logger.info(f"Search valid: {len(valid_items)}/{len(data)}")
     else:
-        logger.warning("Data movie bukan list")
+        logger.warning("Data search bukan list")
     
     # Periksa apakah ada minimal 1 item valid
     if len(valid_items) > 0:
-        logger.info("Movie memiliki minimal 1 item valid")
+        logger.info("Search memiliki minimal 1 item valid")
         
         # Hitung confidence_score berdasarkan kelengkapan data
         if len(data) > 0:

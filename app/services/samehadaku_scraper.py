@@ -26,7 +26,7 @@ class SamehadakuScraper(BaseScraper):
         """
         Search for anime on Samehadaku.
         """
-        search_url = f"{self.search_url}/?s={query}"
+        search_url = f"{self.base_url}/?s={query}"
         logger.info(f"Searching for '{query}' at {search_url}")
         
         try:
@@ -40,9 +40,11 @@ class SamehadakuScraper(BaseScraper):
                 logger.warning(f"No results found for query '{query}'")
                 return []
             
+            logger.info(f"Found {len(articles)} search results")
+            
             for article in articles:
-                # Mengambil elemen-elemen utama
-                link_tag = article.select_one("a")
+                # Mengambil elemen-elemen utama dari struktur HTML yang benar
+                link_tag = article.select_one(".animposx a")
                 title_tag = article.select_one(".data .title h2")
                 status_tag = article.select_one(".data .type")
                 type_tag = article.select_one(".content-thumb .type")  # Tipe (TV, Movie, dll.)
@@ -52,7 +54,7 @@ class SamehadakuScraper(BaseScraper):
                 # Mengambil data dari tooltip hover
                 tooltip = article.select_one(".stooltip")
                 synopsis_tag = tooltip.select_one(".ttls") if tooltip else None
-                genre_tags = tooltip.select(".genres a") if tooltip else []
+                genre_tags = tooltip.select(".genres .mta a") if tooltip else []
                 
                 # Ekstraksi jumlah penonton dari metadata di dalam tooltip
                 views = "N/A"
@@ -71,19 +73,31 @@ class SamehadakuScraper(BaseScraper):
                     if anime_match:
                         anime_slug = anime_match.group(1)
                 
+                # Bersihkan score dari ikon
+                score_text = "N/A"
+                if score_tag:
+                    score_text = score_tag.get_text(strip=True)
+                    # Ekstrak angka dari score (misal: "8.84" dari " 8.84")
+                    score_match = re.search(r'(\d+\.\d+)', score_text)
+                    if score_match:
+                        score_text = score_match.group(1)
+                    else:
+                        score_text = "N/A"
+                
                 search_results.append({
                     "judul": title_tag.text.strip() if title_tag else "N/A",
-                    "url_anime": url,
-                    "anime_slug": anime_slug,
+                    "url": url,
+                    "anime_slug": anime_slug if anime_slug else "N/A",
                     "status": status_tag.text.strip() if status_tag else "N/A",
                     "tipe": type_tag.text.strip() if type_tag else "N/A",
-                    "skor": score_tag.text.strip() if score_tag else "N/A",
+                    "skor": score_text,
                     "penonton": views,
                     "sinopsis": synopsis_tag.text.strip() if synopsis_tag else "N/A",
-                    "genre": [tag.text.strip() for tag in genre_tags],
-                    "url_cover": cover_tag.get('src') if cover_tag else "N/A"
+                    "genre": [tag.text.strip() for tag in genre_tags] if genre_tags else ["Anime"],
+                    "cover": cover_tag.get('src') if cover_tag else "N/A"
                 })
             
+            logger.info(f"Successfully parsed {len(search_results)} search results")
             return search_results
         
         except Exception as e:
@@ -108,9 +122,9 @@ class SamehadakuScraper(BaseScraper):
                 return {}
             
             anime_details['judul'] = info_box.find("h2", class_="entry-title").text.strip()
-            anime_details['url_anime'] = url
+            anime_details['url'] = url
             anime_details['anime_slug'] = anime_slug
-            anime_details['url_cover'] = info_box.find("img")['src'] if info_box.find("img") else "N/A"
+            anime_details['cover'] = info_box.find("img")['src'] if info_box.find("img") else "N/A"
             
             synopsis_p = info_box.select_one("div.desc .entry-content p")
             anime_details['sinopsis'] = synopsis_p.text.strip() if synopsis_p else "N/A"

@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ...core.cache import get_from_cache_or_fetch, invalidate_cache
@@ -11,7 +11,7 @@ router = APIRouter()
 logger = logging.getLogger("app.api.endpoints.home")
 
 
-@router.get("/", response_model=HomeData)
+@router.get("/", response_model=Dict[str, Any])
 async def get_home_data(force_refresh: bool = False):
     """
     Get home page data.

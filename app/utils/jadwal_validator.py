@@ -114,6 +114,8 @@ def validate_jadwal_data(data: List[Dict[str, Any]]) -> Dict[str, Any]:
     # Inisialisasi hasil dengan confidence_score default 0.0
     result = {
         "confidence_score": 0.0,
+        "message": "Data berhasil diambil",
+        "source": "samehadaku.how",
         "data": []
     }
     
@@ -169,13 +171,17 @@ def validate_jadwal_all_data(data: Dict[str, List[Dict[str, Any]]]) -> Dict[str,
     # Inisialisasi hasil dengan confidence_score default 0.0
     result = {
         "confidence_score": 0.0,
-        "Monday": [],
-        "Tuesday": [],
-        "Wednesday": [],
-        "Thursday": [],
-        "Friday": [],
-        "Saturday": [],
-        "Sunday": []
+        "message": "Data berhasil diambil",
+        "source": "samehadaku.how",
+        "data": {
+            "Monday": [],
+            "Tuesday": [],
+            "Wednesday": [],
+            "Thursday": [],
+            "Friday": [],
+            "Saturday": [],
+            "Sunday": []
+        }
     }
     
     # Periksa validitas URL dan cover pada semua item
@@ -209,7 +215,7 @@ def validate_jadwal_all_data(data: Dict[str, List[Dict[str, Any]]]) -> Dict[str,
             total_items += len(items)
             
             # Update hasil dengan data yang valid
-            result[day] = valid_items
+            result["data"][day] = valid_items
     
     # Periksa apakah ada minimal 1 hari dengan 1 item valid
     if valid_days > 0:

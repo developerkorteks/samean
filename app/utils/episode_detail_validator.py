@@ -60,7 +60,9 @@ def validate_episode_detail(data: Dict[str, Any]) -> Dict[str, Any]:
     
     # Inisialisasi hasil dengan confidence_score default 0.0 dan tipe data Dict[str, Any]
     result: Dict[str, Any] = {
-        "confidence_score": 0.0
+        "confidence_score": 0.0,
+        "message": "Data berhasil diambil",
+        "source": "samehadaku.how"
     }
     
     # Validasi field wajib

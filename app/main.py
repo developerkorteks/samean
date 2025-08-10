@@ -3,6 +3,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
 import time
 
 from .api.api import api_router
@@ -60,6 +62,51 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+def custom_openapi(request: Request):
+    """Generate OpenAPI schema with dynamic server URLs"""
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    # Get current request info
+    scheme = request.url.scheme
+    host = request.headers.get("host", str(request.url.netloc))
+    
+    # Check for forwarded headers (for reverse proxy/load balancer)
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    if forwarded_proto:
+        scheme = forwarded_proto
+    
+    server_url = f"{scheme}://{host}"
+    
+    openapi_schema = get_openapi(
+        title=settings.PROJECT_NAME,
+        version="1.0.0",
+        description="FastAPI Anime Scraping API with dynamic host detection",
+        routes=app.routes,
+        servers=[{"url": server_url}]  # Dynamic server URL
+    )
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html(request: Request):
+    """Custom Swagger UI with dynamic OpenAPI URL"""
+    # Reset openapi_schema to ensure fresh generation
+    app.openapi_schema = None
+    
+    return get_swagger_ui_html(
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        title=f"{settings.PROJECT_NAME} - Swagger UI",
+        swagger_js_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js",
+        swagger_css_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css",
+    )
+
+@app.get(f"{settings.API_V1_STR}/openapi.json", include_in_schema=False)
+async def get_openapi_endpoint(request: Request):
+    """Dynamic OpenAPI JSON endpoint"""
+    return custom_openapi(request)
 
 # Mount static files
 try:

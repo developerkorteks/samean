@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 class AnimeBase(BaseModel):
     """Base model for anime data."""
     judul: str
-    url_anime: str = Field(..., description="URL to anime page")
+    url: str = Field(..., description="URL to anime page")
     anime_slug: Optional[str] = Field(None, description="Anime slug for URL")
     status: Optional[str] = None
     tipe: Optional[str] = None
@@ -13,7 +13,7 @@ class AnimeBase(BaseModel):
     penonton: Optional[str] = None
     sinopsis: Optional[str] = None
     genre: Optional[List[str]] = None
-    url_cover: Optional[str] = None
+    cover: Optional[str] = None
 
 
 class AnimeSearch(AnimeBase):

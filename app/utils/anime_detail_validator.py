@@ -132,7 +132,9 @@ def validate_anime_detail(data: Dict[str, Any]) -> Dict[str, Any]:
     
     # Inisialisasi hasil dengan confidence_score default 0.0 dan tipe data Dict[str, Any]
     result: Dict[str, Any] = {
-        "confidence_score": 0.0
+        "confidence_score": 0.0,
+        "message": "Data berhasil diambil",
+        "source": "samehadaku.how"
     }
     
     # Validasi field wajib
@@ -141,9 +143,9 @@ def validate_anime_detail(data: Dict[str, Any]) -> Dict[str, Any]:
         logger.warning(f"Judul tidak valid: {data.get('judul', '')}")
         return result
     
-    url_anime_valid = validate_url(data.get("url_anime", ""))
-    if not url_anime_valid:
-        logger.warning(f"URL anime tidak valid: {data.get('url_anime', '')}")
+    url_valid = validate_url(data.get("url", ""))
+    if not url_valid:
+        logger.warning(f"URL anime tidak valid: {data.get('url', '')}")
         return result
     
     anime_slug_valid = validate_slug(data.get("anime_slug", ""))
@@ -151,9 +153,9 @@ def validate_anime_detail(data: Dict[str, Any]) -> Dict[str, Any]:
         logger.warning(f"Anime slug tidak valid: {data.get('anime_slug', '')}")
         return result
     
-    url_cover_valid = validate_image_url(data.get("url_cover", ""))
-    if not url_cover_valid:
-        logger.warning(f"URL cover tidak valid: {data.get('url_cover', '')}")
+    cover_valid = validate_image_url(data.get("cover", ""))
+    if not cover_valid:
+        logger.warning(f"URL cover tidak valid: {data.get('cover', '')}")
         return result
     
     # Validasi episode_list
@@ -185,9 +187,9 @@ def validate_anime_detail(data: Dict[str, Any]) -> Dict[str, Any]:
     
     # Salin field wajib
     result["judul"] = data["judul"]
-    result["url_anime"] = data["url_anime"]
+    result["url"] = data["url"]
     result["anime_slug"] = data["anime_slug"]
-    result["url_cover"] = data["url_cover"]
+    result["cover"] = data["cover"]
     result["episode_list"] = valid_episodes
     
     # Salin field opsional jika valid
