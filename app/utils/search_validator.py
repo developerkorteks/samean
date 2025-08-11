@@ -121,7 +121,7 @@ def validate_search_data(data: List[Dict[str, Any]]) -> Dict[str, Any]:
     result = {
         "confidence_score": 0.0,
         "message": "Data berhasil diambil",
-        "source": "samehadaku.how",
+        "source": "v1.samehadaku.how",
         "data": []
     }
     

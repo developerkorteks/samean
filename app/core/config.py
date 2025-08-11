@@ -34,8 +34,8 @@ class Settings(BaseSettings):
 
     # Anime Source Configuration - Individual fields for environment variables
     SAMEHADAKU_BASE_URL: str = "https://v1.samehadaku.how"
-    SAMEHADAKU_SEARCH_URL: str = "https://samehadaku.now"
-    SAMEHADAKU_API_URL: str = "https://samehadaku.now/wp-json/custom/v1"
+    SAMEHADAKU_SEARCH_URL: str = "https://v1.samehadaku.how/"
+    SAMEHADAKU_API_URL: str = "https://v1.samehadaku.how/wp-json/custom/v1"
     
     @property
     def ANIME_SOURCES(self) -> Dict[str, Dict[str, Any]]:

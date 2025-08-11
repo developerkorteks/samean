@@ -16,8 +16,8 @@ services:
       - CACHE_LONG_TTL=${CACHE_LONG_TTL:-3600}
       - CACHE_VERY_LONG_TTL=${CACHE_VERY_LONG_TTL:-86400}
       - SAMEHADAKU_BASE_URL=${SAMEHADAKU_BASE_URL:-https://v1.samehadaku.how}
-      - SAMEHADAKU_SEARCH_URL=${SAMEHADAKU_SEARCH_URL:-https://samehadaku.now}
-      - SAMEHADAKU_API_URL=${SAMEHADAKU_API_URL:-https://samehadaku.now/wp-json/custom/v1}
+      - SAMEHADAKU_SEARCH_URL=${SAMEHADAKU_SEARCH_URL:-https://v1.samehadaku.how}
+      - SAMEHADAKU_API_URL=${SAMEHADAKU_API_URL:-https://v1.samehadaku.how/wp-json/custom/v1}
       - DOMAIN=${DOMAIN:-localhost}
       - PROTOCOL=${PROTOCOL:-http}
     env_file:
